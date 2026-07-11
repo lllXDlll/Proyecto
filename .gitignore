@@ -1,0 +1,120 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Package manager caches
+.npm/
+.yarn/
+.pnpm-store/
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+!.env.test.example
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+secrets/
+*.secret
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+debug.log
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# TypeScript and tooling caches
+.tscache/
+.eslintcache
+.vite/
+.vite-cache/
+.turbo/
+.cache/
+
+# React / Vite local files
+*.local
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+
+# Express / backend output
+backend/dist/
+
+# Prisma generated clients and engines
+backend/src/generated/
+backend/generated/
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+*.db
+*.db-journal
+
+# Jest
+.jest/
+jest-cache/
+coverage/
+
+# Playwright
+playwright-report/
+test-results/
+frontend/playwright-report/
+frontend/test-results/
+PrestamosTest/e2e/test-results/
+**/playwright-report/
+**/test-results/
+*.webm
+*.mp4
+*.trace
+trace.zip
+
+# k6 outputs
+k6-results/
+*.k6.json
+*.summary.json
+
+# Docker and local runtime state
+.docker/
+docker-data/
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local agent/editor metadata
+.agent/
+.agents/
+.codex/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig

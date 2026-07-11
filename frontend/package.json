@@ -8,7 +8,10 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --runInBand --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:render": "powershell -Command \"$env:E2E_TARGET='render'; npx.cmd playwright test\"",
     "preview": "vite preview"
   },
   "dependencies": {
