@@ -142,7 +142,7 @@ NODE_ENV=development
 PORT=3000
 
 # PostgreSQL / Supabase
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.vkcqerqcftqdtathnmsc.supabase.co:5432/postgres?schema=public"
 
 # Authentication
 JWT_SECRET="replace-with-a-long-random-secret"
@@ -174,24 +174,55 @@ K6_DURATION="30s"
 > **Warning**
 > Never commit real Supabase credentials, production connection strings, JWT secrets, or Render secrets. Use environment variables in local `.env` files and Render's environment variable settings.
 
+> **Tip**
+> A safe backend template is available at `backend/.env.example`. Copy its values into `backend/.env` locally and replace placeholders there.
+
 ## Database Setup (Prisma + Supabase)
 
-1. Create a Supabase project.
+1. Create or select the Supabase project.
 2. Copy the PostgreSQL connection string from Supabase.
 3. Set the value in `backend/.env` as `DATABASE_URL`.
-4. Generate the Prisma client:
+4. Use the following connection details for this project:
+
+| Field | Value |
+| --- | --- |
+| Host | `db.vkcqerqcftqdtathnmsc.supabase.co` |
+| Port | `5432` |
+| Database | `postgres` |
+| User | `postgres` |
+| Password | Local secret, never committed |
+
+Connection string format:
+
+```env
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.vkcqerqcftqdtathnmsc.supabase.co:5432/postgres?schema=public"
+```
+
+If the database password contains special characters, percent-encode them before placing the password in the URL:
+
+| Character | Encoded |
+| --- | --- |
+| `@` | `%40` |
+| `:` | `%3A` |
+| `/` | `%2F` |
+| `#` | `%23` |
+| `?` | `%3F` |
+| `&` | `%26` |
+| `%` | `%25` |
+
+5. Generate the Prisma client:
 
 ```bash
 npm --prefix backend run prisma:generate
 ```
 
-5. Apply migrations in development:
+6. Apply migrations in development:
 
 ```bash
 npm --prefix backend run prisma:migrate
 ```
 
-6. Optionally seed initial data when needed:
+7. Optionally seed initial data when needed:
 
 ```bash
 npm --prefix backend run prisma:seed
@@ -205,6 +236,9 @@ npm run migrate:deploy
 
 > **Note**
 > Prisma stores the schema in `backend/prisma/schema.prisma` and generates the client into `backend/src/generated/prisma`.
+
+> **Tip**
+> `npx skills add supabase/agent-skills` is optional tooling for AI coding workflows. It is not required to run the application, Prisma, migrations, or deployment.
 
 ## Running the Application
 

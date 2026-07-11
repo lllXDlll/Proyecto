@@ -19,6 +19,14 @@ The backend serves API routes and, in production mode, serves the built React ap
 
 Do not commit production values to source control.
 
+Use this Supabase connection format in Render, replacing `[YOUR-PASSWORD]` with the production database password:
+
+```text
+postgresql://postgres:[YOUR-PASSWORD]@db.vkcqerqcftqdtathnmsc.supabase.co:5432/postgres?schema=public
+```
+
+If the password contains special characters such as `@`, `:`, `/`, `#`, `?`, `&`, or `%`, percent-encode those characters before saving the URL in Render.
+
 ## Supabase
 
 1. Create or select the production PostgreSQL database.
