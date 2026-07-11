@@ -7,6 +7,7 @@ Use the root `render.yaml` as the deployment blueprint.
 - Build command: `npm run build && npm run migrate:deploy`
 - Start command: `npm start`
 - Runtime: Node
+- Node version: `20.18.0`
 - Service type: Web service
 
 The backend serves API routes and, in production mode, serves the built React application from `frontend/dist`.
@@ -14,6 +15,7 @@ The backend serves API routes and, in production mode, serves the built React ap
 ## Required Environment Variables
 
 - `NODE_ENV=production`
+- `NODE_VERSION=20.18.0`
 - `DATABASE_URL`: Supabase PostgreSQL connection string
 - `JWT_SECRET`: strong production JWT secret
 
