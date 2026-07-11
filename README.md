@@ -606,6 +606,43 @@ Coverage output paths:
 | Backend integration | `backend/coverage/integration/index.html` |
 | Frontend unit | `frontend/coverage/unit/index.html` |
 
+### Donde se almacenan los resultados de pruebas
+
+After running the test commands, generated results are stored in local report folders. These folders are ignored by Git and should not be committed.
+
+| Command | Main outputs | Purpose |
+| --- | --- | --- |
+| `npm run test:unit:coverage` | `backend/coverage/unit/index.html`, `backend/coverage/unit/test-report.html`, `frontend/coverage/unit/index.html`, `frontend/coverage/unit/test-report.html` | Unit coverage and detailed unit execution reports |
+| `npm run test:integration:coverage` | `backend/coverage/integration/index.html`, `backend/coverage/integration/test-report.html` | Integration coverage and detailed integration execution report |
+| `npm run test:coverage` | All unit and integration coverage/report paths listed above | Complete Jest/Istanbul coverage plus detailed Jest reports |
+| `npm run test:e2e` | `frontend/playwright-report/index.html`, `frontend/test-results/` | Local Playwright HTML report, traces, screenshots, and videos when generated |
+| `npm run test:e2e:render` | `frontend/playwright-report/index.html`, `frontend/test-results/` | Render-target Playwright HTML report and failure artifacts |
+
+Detailed Jest reports show every test case, status, duration, source file, filters, and failure messages:
+
+```text
+backend/coverage/unit/test-report.html
+backend/coverage/integration/test-report.html
+frontend/coverage/unit/test-report.html
+```
+
+Coverage reports show source files, covered lines, uncovered lines, branches, and lcov data:
+
+```text
+backend/coverage/unit/index.html
+backend/coverage/integration/index.html
+frontend/coverage/unit/index.html
+```
+
+Playwright E2E reports show browser-level execution, steps, traces, screenshots, videos, and retry artifacts when available:
+
+```text
+frontend/playwright-report/index.html
+frontend/test-results/
+```
+
+The generated folders `coverage/`, `playwright-report/`, and `test-results/` are intentionally excluded in `.gitignore`.
+
 ### Ver el reporte grafico de cobertura
 
 After running a coverage command, open the generated HTML report.
@@ -613,9 +650,13 @@ After running a coverage command, open the generated HTML report.
 Windows PowerShell:
 
 ```powershell
+Start-Process backend/coverage/integration/test-report.html
+Start-Process backend/coverage/unit/test-report.html
+Start-Process frontend/coverage/unit/test-report.html
 Start-Process backend/coverage/integration/index.html
 Start-Process backend/coverage/unit/index.html
 Start-Process frontend/coverage/unit/index.html
+Start-Process frontend/playwright-report/index.html
 ```
 
 Windows CMD:

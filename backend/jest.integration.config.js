@@ -14,6 +14,13 @@ module.exports = {
   globalSetup: '<rootDir>/../PrestamosTest/integration/jest.globalSetup.ts',
   globalTeardown: '<rootDir>/../PrestamosTest/integration/jest.globalTeardown.ts',
   setupFilesAfterEnv: ['<rootDir>/../PrestamosTest/integration/jest.setup.ts'],
+  reporters: [
+    'default',
+    ['<rootDir>/../PrestamosTest/reporters/detailed-html-reporter.cjs', {
+      outputFile: '<rootDir>/coverage/integration/test-report.html',
+      title: 'Backend Integration Test Report'
+    }]
+  ],
   clearMocks: true,
   maxWorkers: 1,
   testTimeout: 120000,

@@ -15,6 +15,13 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.test.json' }]
   },
+  reporters: [
+    'default',
+    ['<rootDir>/../PrestamosTest/reporters/detailed-html-reporter.cjs', {
+      outputFile: '<rootDir>/coverage/unit/test-report.html',
+      title: 'Frontend Unit Test Report'
+    }]
+  ],
   coverageDirectory: '<rootDir>/coverage/unit',
   coverageReporters: ['text', 'html', 'lcov'],
   collectCoverageFrom: [
