@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const loan_controller_1 = require("../controllers/loan.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.use((0, auth_middleware_1.authorizeRole)(['ADMINISTRADOR']));
+router.post('/', loan_controller_1.createLoan);
+router.put('/:id/return', loan_controller_1.returnLoan);
+router.get('/active', loan_controller_1.listActiveLoans);
+router.get('/history', loan_controller_1.listLoanHistory);
+exports.default = router;

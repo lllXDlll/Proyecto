@@ -1,0 +1,95 @@
+schema: spec-driven
+
+Domain:
+  The application manages the lending of laboratory equipment.
+  Users can authenticate, manage equipment, register loans and returns, and consult reports.
+
+context: |
+  Project: Sistema de Gestión de Préstamos de Equipos
+
+  Development Methodology:
+  - Scrum
+  - Spec-Driven Development (OpenSpec)
+
+  Frontend:
+  - React
+  - TypeScript
+  - Vite
+  - React Router
+  - Axios
+
+  Backend:
+  - Node.js
+  - Express
+  - TypeScript
+  - Prisma ORM
+  - JWT Authentication
+  - bcrypt
+
+  Database:
+  - PostgreSQL
+  - Hosted on Supabase
+
+  Deployment:
+  - Render (Application)
+  - Supabase (Database)
+
+  Testing:
+  - Jest (Unit Testing)
+  - Supertest (Integration Testing)
+  - Playwright (End-to-End Testing)
+  - k6 (Load Testing)
+
+  Coding Standards:
+  - Clean Architecture
+  - RESTful API
+  - SOLID principles
+  - Repository Pattern
+  - Dependency Injection where appropriate
+  - Conventional Commits
+
+  Project Structure:
+  - client/
+  - server/
+  - prisma/
+  - tests/
+  - openspec/
+
+Development Process:
+  Sprint 1 - Authentication
+  Sprint 2 - User Management
+  Sprint 3 - Equipment Management
+  Sprint 4 - Loan Management
+  Sprint 5 - Dashboard and Reports
+  Sprint 6 - Testing and Deployment
+
+User Stories:
+  Every feature should reference its User Story ID.
+  Example:
+  HU-08 - Register Equipment
+
+rules:
+  proposal:
+    - Explain the business value of the change.
+    - Describe the scope of the sprint.
+    - Include affected modules.
+    - Include a "Non-goals" section.
+    - Keep proposals concise.
+
+  design:
+    - Describe the architecture before implementation.
+    - Include database changes if applicable.
+    - Describe API endpoints.
+    - Describe validation rules.
+    - Mention security considerations.
+
+  tasks:
+    - Organize tasks by Frontend, Backend and Database.
+    - Use Markdown checklists.
+    - Keep each task focused on a single responsibility.
+    - Reference the related User Story.
+
+  specs:
+    - Define requirements using scenarios.
+    - Every requirement must contain acceptance criteria.
+    - Use Given / When / Then scenarios.

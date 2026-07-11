@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma-sprint4"
+}
+
+model User {
+  id                   Int        @id @default(autoincrement())
+  usuario              String     @unique
+  password             String
+  nombre               String
+  rol                  String     @default("USUARIO")
+  activo               Boolean    @default(true)
+  prestamos            Prestamo[] @relation("PrestamoUsuario")
+  prestamosRegistrados Prestamo[] @relation("PrestamoRegistradoPor")
+  prestamosRecibidos   Prestamo[] @relation("PrestamoRecibidoPor")
+
+  @@map("usuarios")
+}
+
+model Equipo {
+  id                 Int        @id @default(autoincrement())
+  nombre             String
+  descripcion        String?
+  codigoInventario   String     @unique
+  estado             String     @default("DISPONIBLE")
+  fechaCreacion      DateTime   @default(now())
+  fechaActualizacion DateTime   @updatedAt
+  prestamos          Prestamo[]
+
+  @@map("equipos")
+}
+
+model Prestamo {
+  id                      Int       @id @default(autoincrement())
+  usuarioId               Int
+  equipoId                Int
+  fechaPrestamo           DateTime  @default(now())
+  fechaDevolucionPrevista DateTime?
+  fechaDevolucionReal     DateTime?
+  estado                  String    @default("ACTIVO")
+  observacionesPrestamo   String?
+  observacionesDevolucion String?
+  registradoPorId         Int?
+  recibidoPorId           Int?
+  fechaCreacion           DateTime  @default(now())
+  fechaActualizacion      DateTime  @updatedAt
+  usuario                 User      @relation("PrestamoUsuario", fields: [usuarioId], references: [id])
+  equipo                  Equipo    @relation(fields: [equipoId], references: [id])
+  registradoPor           User?     @relation("PrestamoRegistradoPor", fields: [registradoPorId], references: [id])
+  recibidoPor             User?     @relation("PrestamoRecibidoPor", fields: [recibidoPorId], references: [id])
+
+  @@map("prestamos")
+}
