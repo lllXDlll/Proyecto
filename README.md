@@ -285,7 +285,13 @@ Root scripts:
 | `npm run build` | Installs backend/frontend dependencies, generates Prisma client, builds backend, and builds frontend |
 | `npm start` | Starts the compiled backend application |
 | `npm test` | Runs backend and frontend Jest suites |
+| `npm run test:unit` | Runs backend and frontend unit suites |
+| `npm run test:unit:coverage` | Runs backend and frontend unit coverage |
+| `npm run test:integration` | Runs backend API integration tests with PostgreSQL Testcontainers |
+| `npm run test:integration:coverage` | Runs backend API integration coverage |
+| `npm run test:coverage` | Runs unit coverage and integration coverage |
 | `npm run test:e2e` | Runs Playwright E2E tests through the frontend project |
+| `npm run test:e2e:render` | Runs Playwright E2E tests against the Render deployment |
 | `npm run migrate:deploy` | Applies Prisma migrations for production |
 
 Backend scripts:
@@ -297,7 +303,11 @@ Backend scripts:
 | `npm --prefix backend start` | Starts compiled backend from `dist/index.js` |
 | `npm --prefix backend test` | Runs all backend Jest tests |
 | `npm --prefix backend run test:unit` | Runs backend unit tests from `PrestamosTest/unit/backend` |
-| `npm --prefix backend run test:integration` | Runs integration tests from `PrestamosTest/integration` |
+| `npm --prefix backend run test:unit:watch` | Runs backend unit tests in watch mode |
+| `npm --prefix backend run test:unit:coverage` | Runs backend unit tests with HTML/lcov coverage in `backend/coverage/unit` |
+| `npm --prefix backend run test:integration` | Runs integration tests from `PrestamosTest/integration` with Testcontainers |
+| `npm --prefix backend run test:integration:watch` | Runs integration tests in watch mode |
+| `npm --prefix backend run test:integration:coverage` | Runs integration tests with HTML/lcov coverage in `backend/coverage/integration` |
 | `npm --prefix backend run prisma:generate` | Generates Prisma client |
 | `npm --prefix backend run prisma:migrate` | Runs development migrations |
 | `npm --prefix backend run prisma:seed` | Runs database seed script |
@@ -309,12 +319,15 @@ Frontend scripts:
 | `npm --prefix frontend run dev` | Starts Vite development server |
 | `npm --prefix frontend run build` | Builds the React application |
 | `npm --prefix frontend test` | Runs frontend Jest tests |
+| `npm --prefix frontend run test:watch` | Runs frontend Jest tests in watch mode |
+| `npm --prefix frontend run test:coverage` | Runs frontend Jest tests with HTML/lcov coverage in `frontend/coverage/unit` |
 | `npm --prefix frontend run test:e2e` | Runs Playwright E2E tests |
+| `npm --prefix frontend run test:e2e:render` | Runs Playwright E2E tests against Render |
 | `npm --prefix frontend run preview` | Serves the built frontend locally |
 
-## Running Tests
+## Pruebas del proyecto
 
-All active tests are organized under `PrestamosTest`:
+All active automated tests are organized under `PrestamosTest`:
 
 ```text
 PrestamosTest/
@@ -322,7 +335,14 @@ PrestamosTest/
 |   |-- backend/
 |   `-- frontend/
 |-- integration/
-|   `-- api/
+|   |-- auth/
+|   |-- dashboard/
+|   |-- equipment/
+|   |-- helpers/
+|   |-- loans/
+|   |-- reports/
+|   |-- security/
+|   `-- users/
 |-- e2e/
 |-- load/
 |   `-- api/
@@ -331,37 +351,211 @@ PrestamosTest/
 `-- docs/
 ```
 
-Run all Jest tests:
+The project includes unit tests, API integration tests, Playwright end-to-end tests, an optional k6 load script, and Jest/Istanbul coverage reports.
+
+Unit tests validate isolated controller, middleware, context, and route-guard behavior. Integration tests validate the REST API with Supertest and Prisma against a real PostgreSQL database created by Testcontainers. Integration tests must not use Supabase, Render, or any production database.
+
+### Requisitos para ejecutar las pruebas
+
+Required tools:
+
+| Tool | Requirement | Notes |
+| --- | --- | --- |
+| Node.js | `>=20.19.0 <22` | `.node-version` and `render.yaml` use Node `20.19.5` |
+| npm | Bundled with Node.js | Used for scripts and lockfile-based installs |
+| Git | Current stable version | Repository checkout |
+| Docker Desktop or Docker Engine | Required for integration tests | Testcontainers starts PostgreSQL automatically |
+| k6 | Optional | Only required for load tests |
+
+Verify local tools:
 
 ```bash
-npm test
+node --version
+npm --version
+docker --version
+docker info
 ```
 
-Run backend unit tests:
+Docker must be running before executing `test:integration` or `test:integration:coverage`.
+
+### Instalacion de dependencias
+
+Install from the project root using the committed lockfiles:
+
+```bash
+npm install
+npm --prefix backend ci --include=dev --include=optional
+npm --prefix frontend ci --include=dev --include=optional
+```
+
+The root project currently has no committed `package-lock.json`, so `npm install` is used there only for root script metadata. Backend and frontend use `npm ci` because they have committed lockfiles. Development and optional dependencies are required for Jest, ts-jest, Supertest, Testcontainers, Prisma, Playwright, TypeScript, and coverage tooling. Do not delete or regenerate lockfiles unless there is a justified dependency change.
+
+Useful dependency audit command:
+
+```bash
+npm --prefix backend ls jest ts-jest supertest superagent mime mime-types testcontainers jsonwebtoken express
+```
+
+### Configuracion del entorno de pruebas
+
+Backend integration tests create `DATABASE_URL` dynamically with Testcontainers. You do not need a local PostgreSQL connection string for local integration tests.
+
+Safe test template:
+
+```text
+backend/.env.test.example
+```
+
+Relevant variables:
+
+| Variable | Required | Used by | Notes |
+| --- | --- | --- | --- |
+| `NODE_ENV=test` | Automatic | Integration tests | Set by test setup |
+| `JWT_SECRET` | Optional | Unit/integration auth tests | Defaults to a local test secret when not set |
+| `DATABASE_URL` | Automatic for integration | Prisma | Generated dynamically by Testcontainers |
+| `E2E_TARGET=render` | Optional | Playwright | Runs E2E against Render |
+| `E2E_BASE_URL` | Optional | Playwright | Overrides frontend URL |
+| `E2E_API_BASE_URL` | Optional | Playwright fixtures | Overrides API URL |
+| `E2E_ADMIN_USER` | Optional | Playwright | Defaults to `admin` |
+| `E2E_ADMIN_PASSWORD` | Optional | Playwright | Defaults to `admin123` |
+| `API_BASE_URL` | Optional | k6 | Defaults depend on the k6 script |
+| `K6_USER`, `K6_PASSWORD`, `K6_VUS`, `K6_DURATION` | Optional | k6 | Load-test configuration |
+
+Never commit real `.env` files, Supabase passwords, production database URLs, Render secrets, or JWT secrets.
+
+### Ejecutar pruebas unitarias
+
+Run all unit tests from the root:
+
+```bash
+npm run test:unit
+```
+
+Backend unit tests only:
 
 ```bash
 npm --prefix backend run test:unit
+npm --prefix backend run test:unit:watch
+npm --prefix backend run test:unit:coverage
 ```
 
-Run backend integration tests:
+Frontend unit tests only:
+
+```bash
+npm --prefix frontend test
+npm --prefix frontend run test:watch
+npm --prefix frontend run test:coverage
+```
+
+Run a specific backend unit test file:
+
+```bash
+npm --prefix backend run test:unit -- ../PrestamosTest/unit/backend/auth/auth.controller.test.ts
+```
+
+### Ejecutar pruebas de integracion
+
+Integration tests use Jest, Supertest, Prisma, PostgreSQL, and Testcontainers. The suite automatically:
+
+1. Starts a PostgreSQL container.
+2. Creates a temporary `DATABASE_URL`.
+3. Applies the Prisma schema with `prisma db push`.
+4. Executes API requests through `request(app)`.
+5. Cleans tables between tests.
+6. Disconnects Prisma.
+7. Stops the container.
+
+Run all integration tests:
+
+```bash
+npm run test:integration
+```
+
+Equivalent backend command:
 
 ```bash
 npm --prefix backend run test:integration
 ```
 
-Run frontend unit tests:
+Run integration tests with coverage:
 
 ```bash
-npm --prefix frontend test
+npm run test:integration:coverage
 ```
 
-Run Playwright E2E tests:
+Run one integration test file:
+
+```bash
+npm --prefix backend run test:integration -- --runTestsByPath ../PrestamosTest/integration/auth/auth.integration.test.ts
+```
+
+Run with open-handle diagnostics:
+
+```bash
+npm --prefix backend run test:integration -- --detectOpenHandles
+```
+
+The first execution may take longer while Docker downloads `postgres:15-alpine`.
+
+### Ejecutar pruebas end-to-end
+
+Run local Playwright E2E tests:
 
 ```bash
 npm run test:e2e
 ```
 
-Run k6 load tests:
+Run against the Render deployment:
+
+```bash
+npm run test:e2e:render
+```
+
+Run with a visible browser:
+
+```powershell
+$env:E2E_TARGET='render'
+npm.cmd --prefix frontend run test:e2e -- --headed
+```
+
+Open Playwright UI mode:
+
+```powershell
+cd frontend
+$env:E2E_TARGET='render'
+npx.cmd playwright test --ui
+```
+
+Playwright HTML reports are generated at:
+
+```text
+frontend/playwright-report/index.html
+```
+
+### Ejecutar pruebas contra un despliegue propio
+
+There are two different modes:
+
+| Mode | Target | Database |
+| --- | --- | --- |
+| Local integration | Express app imported with `request(app)` | PostgreSQL Testcontainer |
+| External deployment E2E | Deployed UI/API through Playwright | Deployment database |
+
+The integration suite does not currently support an external `TEST_API_BASE_URL` mode. It intentionally uses `request(app)` and Testcontainers to avoid destructive tests against shared databases.
+
+For deployed validation, use Playwright E2E with a dedicated testing deployment:
+
+```powershell
+$env:E2E_BASE_URL='https://your-service.onrender.com'
+$env:E2E_API_BASE_URL='https://your-service.onrender.com/api'
+npm.cmd --prefix frontend run test:e2e
+```
+
+Warning: E2E tests create and update test data. Do not run them against a production database that contains real data unless the deployment is explicitly dedicated to testing.
+
+### Pruebas de carga
+
+Run the k6 load script:
 
 ```bash
 k6 run PrestamosTest/load/api/main-api.k6.js
@@ -373,8 +567,188 @@ Example with custom k6 variables:
 k6 run -e API_BASE_URL=http://localhost:3000/api -e K6_USER=admin -e K6_PASSWORD=admin123 PrestamosTest/load/api/main-api.k6.js
 ```
 
-> **Warning**
-> k6 must be installed separately. If `k6 version` fails, install k6 before running load tests.
+k6 must be installed separately. If `k6 version` fails, install k6 before running load tests.
+
+### Cobertura de codigo
+
+Coverage metrics:
+
+| Metric | Meaning |
+| --- | --- |
+| Statements | Executed code statements |
+| Branches | Covered conditional paths |
+| Functions | Called functions |
+| Lines | Executed source lines |
+
+Run unit coverage:
+
+```bash
+npm run test:unit:coverage
+```
+
+Run integration coverage:
+
+```bash
+npm run test:integration:coverage
+```
+
+Run all configured coverage commands:
+
+```bash
+npm run test:coverage
+```
+
+Coverage output paths:
+
+| Suite | HTML report |
+| --- | --- |
+| Backend unit | `backend/coverage/unit/index.html` |
+| Backend integration | `backend/coverage/integration/index.html` |
+| Frontend unit | `frontend/coverage/unit/index.html` |
+
+### Ver el reporte grafico de cobertura
+
+After running a coverage command, open the generated HTML report.
+
+Windows PowerShell:
+
+```powershell
+Start-Process backend/coverage/integration/index.html
+Start-Process backend/coverage/unit/index.html
+Start-Process frontend/coverage/unit/index.html
+```
+
+Windows CMD:
+
+```cmd
+start backend\coverage\integration\index.html
+```
+
+Linux:
+
+```bash
+xdg-open backend/coverage/integration/index.html
+```
+
+macOS:
+
+```bash
+open backend/coverage/integration/index.html
+```
+
+In the HTML report, select a directory, then a file, and review uncovered lines, uncovered branches, and partially covered conditions. Green means high coverage, yellow means partial coverage, and red means low or missing coverage.
+
+### Umbrales de cobertura
+
+Jest coverage thresholds are configured conservatively:
+
+| Scope | Statements | Branches | Functions | Lines |
+| --- | ---: | ---: | ---: | ---: |
+| Backend unit | 70% | 60% | 70% | 70% |
+| Backend integration | 70% | 60% | 70% | 70% |
+| Frontend unit | 70% | 50% | 70% | 70% |
+
+Coverage commands exit with an error when coverage falls below the configured threshold.
+
+### Orden recomendado de ejecucion
+
+Recommended sequence:
+
+```bash
+npm install
+npm --prefix backend ci --include=dev --include=optional
+npm --prefix frontend ci --include=dev --include=optional
+npm run test:unit
+npm run test:integration
+npm run test:unit:coverage
+npm run test:integration:coverage
+npm run test:e2e:render
+```
+
+Integration tests run sequentially with `--runInBand` to avoid multiple Jest workers competing over a shared Testcontainer setup.
+
+### Solucion de problemas frecuentes
+
+#### Docker is not running
+
+Possible error:
+
+```text
+Could not find a working container runtime strategy
+```
+
+Start Docker Desktop or Docker Engine and verify:
+
+```bash
+docker info
+```
+
+#### PostgreSQL container does not start
+
+Inspect containers and logs:
+
+```bash
+docker ps
+docker logs <container-id>
+```
+
+#### Prisma schema does not apply
+
+The integration setup applies the schema with:
+
+```bash
+npx prisma db push --schema prisma/schema.prisma --skip-generate
+```
+
+For local application setup, regenerate the Prisma client with:
+
+```bash
+npm --prefix backend run prisma:generate
+```
+
+#### Port conflicts
+
+Testcontainers maps PostgreSQL to a random host port automatically, so it should not conflict with local PostgreSQL or the included `docker-compose.yml`.
+
+#### `mime.getType is not a function`
+
+Inspect dependency resolution:
+
+```bash
+npm --prefix backend ls supertest superagent mime mime-types
+npm --prefix backend explain mime
+```
+
+Use the committed backend/frontend lockfiles with `npm ci`. Do not arbitrarily upgrade Supertest, Superagent, or mime packages. The integration Jest config preserves Superagent's nested `mime@2.6.0` resolution.
+
+#### JWT expiration test errors
+
+Expired test tokens must be generated with an explicit `exp` claim in the past. Do not use unsupported negative `expiresIn` values such as `"-1s"`.
+
+#### Open handles after Jest finishes
+
+The integration setup disconnects Prisma and stops Testcontainers. For diagnostics:
+
+```bash
+npm --prefix backend run test:integration -- --detectOpenHandles
+```
+
+#### Tests fail only when run together
+
+Check database cleanup and test isolation. Integration tests truncate `prestamos`, `equipos`, and `usuarios` before each test and run sequentially.
+
+### Advertencias de seguridad para pruebas
+
+Never:
+
+- commit `.env` files;
+- commit Supabase passwords or production connection strings;
+- hardcode JWT secrets;
+- publish test credentials;
+- run destructive cleanup against a production database;
+- point integration tests at Render or Supabase production databases.
+
+`.env.example` and `.env.test.example` files must contain placeholders only.
 
 ## Deployment Overview
 

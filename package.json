@@ -9,7 +9,13 @@
     "build": "npm --prefix backend ci --include=dev --include=optional && npm --prefix frontend ci --include=dev --include=optional && npm --prefix backend run prisma:generate && npm --prefix backend run build && npm --prefix frontend run build",
     "start": "npm --prefix backend run start",
     "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:unit": "npm --prefix backend run test:unit && npm --prefix frontend test",
+    "test:unit:coverage": "npm --prefix backend run test:unit:coverage && npm --prefix frontend run test:coverage",
+    "test:integration": "npm --prefix backend run test:integration",
+    "test:integration:coverage": "npm --prefix backend run test:integration:coverage",
+    "test:coverage": "npm run test:unit:coverage && npm run test:integration:coverage",
     "test:e2e": "npm --prefix frontend run test:e2e",
+    "test:e2e:render": "powershell -Command \"$env:E2E_TARGET='render'; npm.cmd --prefix frontend run test:e2e\"",
     "migrate:deploy": "cd backend && npx prisma migrate deploy"
   }
 }

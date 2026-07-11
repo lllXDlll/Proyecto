@@ -8,11 +8,27 @@ module.exports = {
     '<rootDir>/../node_modules'
   ],
   testMatch: [
-    '<rootDir>/../PrestamosTest/unit/backend/**/*.test.ts',
-    '<rootDir>/../PrestamosTest/integration/**/*.test.ts'
+    '<rootDir>/../PrestamosTest/unit/backend/**/*.test.ts'
   ],
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.test.json' }]
   },
-  clearMocks: true
+  clearMocks: true,
+  coverageDirectory: '<rootDir>/coverage/unit',
+  coverageReporters: ['text', 'html', 'lcov'],
+  collectCoverageFrom: [
+    '<rootDir>/src/controllers/**/*.ts',
+    '<rootDir>/src/middlewares/**/*.ts',
+    '!<rootDir>/src/generated/**',
+    '!<rootDir>/src/**/*.d.ts',
+    '!<rootDir>/src/index.ts'
+  ],
+  coverageThreshold: {
+    global: {
+      statements: 70,
+      branches: 60,
+      functions: 70,
+      lines: 70
+    }
+  }
 };
