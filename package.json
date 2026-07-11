@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=20.0.0 <22.0.0"
+    "node": ">=20.19.0 <22"
   },
   "scripts": {
-    "build": "npm --prefix backend ci --include=dev && npm --prefix frontend ci --include=dev && npm --prefix backend run prisma:generate && npm --prefix backend run build && npm --prefix frontend run build",
+    "build": "npm --prefix backend ci --include=dev --include=optional && npm --prefix frontend ci --include=dev --include=optional && npm --prefix backend run prisma:generate && npm --prefix backend run build && npm --prefix frontend run build",
     "start": "npm --prefix backend run start",
     "test": "npm --prefix backend test && npm --prefix frontend test",
     "test:e2e": "npm --prefix frontend run test:e2e",
